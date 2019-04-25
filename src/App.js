@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import axios from 'axios';
 import './App.css';
 
 const DEFAULT_QUERY = 'redux';
@@ -84,10 +85,12 @@ const Table = ({list, onDismiss}) =>
 class App extends Component {
   constructor(props) {
     super(props);
+    this._isMounted = false;
     this.state = {
       results: null,
       searchKey: '',
-      searchTerm: DEFAULT_QUERY
+      searchTerm: DEFAULT_QUERY,
+      error: null
     };
     this.setSearchTopStories = this.setSearchTopStories.bind(this);
     this.onDismiss = this.onDismiss.bind(this);
@@ -137,10 +140,9 @@ class App extends Component {
   }
 
   fetchSearchTopStories(searchTerm, page = 0) {
-    fetch(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HPP}${DEFAULT_HPP}`)
-      .then(response => response.json())
-      .then(result => this.setSearchTopStories(result))
-      .catch(error => error);
+    axios(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HPP}${DEFAULT_HPP}`)
+      .then(result => this._isMounted && this.setSearchTopStories(result.data))
+      .catch(error => this._isMounted && this.setState({ error }));
   }
 
   needsToSearchTopStories(searchTerm) {
@@ -149,15 +151,21 @@ class App extends Component {
 
   componentDidMount() {
     const { searchTerm } = this.state;
+    this._isMounted = true;
     this.setState({ searchKey: searchTerm });
     this.fetchSearchTopStories(searchTerm);
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false;
   }
 
   render() {
     const { 
       searchTerm,
       results,
-      searchKey
+      searchKey,
+      error
     } = this.state;
     const page = (results && results[searchKey] && results[searchKey].page) || 0;
     const list = (results && results[searchKey] && results[searchKey].hits) || [];
@@ -171,22 +179,26 @@ class App extends Component {
           >
             Search
           </Search>
-            <div>
-              {results 
-                ? (<Table 
-                  list={list}
-                  onDismiss={this.onDismiss}
-                />) 
-                : (null)
-              }
-              <div className="interactions">
-                <Button
-                  onClick={() => this.fetchSearchTopStories(searchKey, page + 1)}
+          <div>
+            {error 
+              ? (<div 
+                className="interactions"
                 >
-                  More
-                </Button>
-              </div>
+                  <p>Something went wrong!</p>
+                </div>) 
+              : (<Table 
+                list={list}
+                onDismiss={this.onDismiss}
+                />)
+            }
+            <div className="interactions">
+              <Button
+                onClick={() => this.fetchSearchTopStories(searchKey, page + 1)}
+              >
+                More
+              </Button>
             </div>
+          </div>
         </div>
       </div>
     );
