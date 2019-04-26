@@ -1,7 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import renderer from 'react-test-renderer';
+import Enzyme, { shallow } from 'enzyme';
+import Adapter from 'enzyme-adapter-react-16';
 import App, { Search, Table, Button } from './App';
+
+Enzyme.configure({ adapter: new Adapter() });
 
 describe('App', () => {
   it('renders without crashing', () => {
@@ -43,6 +47,11 @@ describe('Button', () => {
     const tree = element.toJSON();
     expect(tree).toMatchSnapshot();
   });
+
+  it('has a button element', () => {
+    const element = shallow(<Button>More</Button>);
+    expect(element.find('button').length).toBe(1);
+  });
 });
 
 describe('Table', () => {
@@ -73,10 +82,16 @@ describe('Table', () => {
     ReactDOM.unmountComponentAtNode(div);
 
   });
+
   it('has a valid snapshot', () => {
     const element = renderer.create(<Table {...props} />);
     const tree = element.toJSON();
     expect(tree).toMatchSnapshot();
+  });
+
+  it('shows two items in list', () => {
+    const element = shallow(<Table {...props} />);
+    expect(element.find('.table-row').length).toBe(2);
   });
 });
 
