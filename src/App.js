@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+import PropTypes from 'pro-types';
 import './App.css';
+
 
 const DEFAULT_QUERY = 'redux';
 const DEFAULT_HPP = '10';
@@ -43,8 +45,18 @@ function Button({onClick, className, children}) {
     >
       {children}
     </button>
-  );
+  ); 
 }
+
+Button.defaultProps = {
+  className: ''
+}
+
+Button.propTypes = {
+  onClick: PropTypes.func.isRequired,
+  className: PropTypes.string,
+  children: PropTypes.node.isRequired
+};
 
 const Search = ({ 
   onChange, 
@@ -61,6 +73,17 @@ const Search = ({
         {children}
       </button>
     </form>
+
+Search.deafaultProps = {
+  value: ''
+};
+
+Search.propTypes = {
+  onChange: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired,
+  value: PropTypes.string,
+  children: PropTypes.node
+};
 
 const Table = ({list, onDismiss}) => 
   <div className="table">
@@ -81,6 +104,19 @@ const Table = ({list, onDismiss}) =>
       </div>
     ))}
   </div>
+
+Table.propTypes = {
+  list: propTypes.arrayOf(
+    propTypes.shape({
+      objectID: PropTypes.string.isRequired,
+      author: PropTypes.string,
+      url: PropTypes.string,
+      num_comments: PropTypes.number,
+      points: PropTypes.number
+    })
+  ).isRequired,
+  onDismiss: propTypes.func.isRequired
+};
 
 class App extends Component {
   constructor(props) {
